@@ -18,11 +18,11 @@ CreateThread(function()
             if isPointInside then
                 inHuntingZone = true
                 zonename = Zones[k].name
-                RSGCore.Functions.Notify('you have entered a hunting zone!', 'primary')
+                RSGCore.Functions.Notify(Lang:t('primary.enter_hunting_zone'), 'primary')
             else
                 inHuntingZone = false
                 zonename = NIL
-                RSGCore.Functions.Notify('you have left a hunting zone!', 'primary')
+                RSGCore.Functions.Notify(Lang:t('primary.left_hunting_zone'), 'primary')
             end
         end)
         if Config.HuntingZones[k].showblip == true then
@@ -63,7 +63,7 @@ RegisterNetEvent('rsg-hunting:server:useHuntingBait', function(item)
             Wait(10000)
             ClearPedTasks(ped)
             TriggerServerEvent('rsg-hunting::server:removeItem', 'basic_hunt_bait')
-            RSGCore.Functions.Notify('bait has been set, hide!', 'primary')
+            RSGCore.Functions.Notify(Lang:t('primary.bait_set'), 'primary')
             Wait(Config.HideTime)
             local spawnanimal = Config.BasicHuntingAnimals[math.random(#Config.BasicHuntingAnimals)]
             local model = spawnanimal
@@ -98,7 +98,7 @@ RegisterNetEvent('rsg-hunting:server:useHuntingBait', function(item)
             Wait(10000)
             ClearPedTasks(ped)
             TriggerServerEvent('rsg-hunting::server:removeItem', 'prime_hunt_bait')
-            RSGCore.Functions.Notify('bait has been set, hide!', 'primary')
+            RSGCore.Functions.Notify(Lang:t('primary.bait_set'), 'primary')
             Wait(Config.HideTime)
             local spawnanimal = Config.PrimeHuntingAnimals[math.random(#Config.PrimeHuntingAnimals)]
             local model = spawnanimal
@@ -126,6 +126,6 @@ RegisterNetEvent('rsg-hunting:server:useHuntingBait', function(item)
             end)
         end
     else
-        RSGCore.Functions.Notify('you can\'t use that outside a hunting zone!', 'error')
+        RSGCore.Functions.Notify(Lang:t('error.cant_use'), 'error')
     end
 end)
