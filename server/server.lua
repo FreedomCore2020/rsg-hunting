@@ -31,14 +31,24 @@ end
 
 -----------------------------------------------------------------------
 
-RSGCore.Functions.CreateUseableItem('basic_hunt_bait', function(source)
+RSGCore.Functions.CreateUseableItem('consumable_herbivore_bait', function(source)
     local src = source
-    TriggerClientEvent('rsg-hunting:server:useHuntingBait', src, 'basic_hunt_bait')
+    TriggerClientEvent('rsg-hunting:server:useHuntingBait', src, 'consumable_herbivore_bait')
 end)
 
-RSGCore.Functions.CreateUseableItem('prime_hunt_bait', function(source)
+RSGCore.Functions.CreateUseableItem('consumable_potent_herbivore_bait', function(source)
     local src = source
-    TriggerClientEvent('rsg-hunting:server:useHuntingBait', src, 'prime_hunt_bait')
+    TriggerClientEvent('rsg-hunting:server:useHuntingBait', src, 'consumable_potent_herbivore_bait')
+end)
+
+RSGCore.Functions.CreateUseableItem('consumable_predator_bait', function(source)
+    local src = source
+    TriggerClientEvent('rsg-hunting:server:useHuntingBait', src, 'consumable_predator_bait')
+end)
+
+RSGCore.Functions.CreateUseableItem('consumable_potent_predator_bait', function(source)
+    local src = source
+    TriggerClientEvent('rsg-hunting:server:useHuntingBait', src, 'consumable_potent_predator_bait')
 end)
 
 RegisterServerEvent('rsg-hunting::server:removeItem')
