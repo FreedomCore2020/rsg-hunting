@@ -55,17 +55,17 @@ end
 
 RegisterNetEvent('rsg-hunting:server:useHuntingBait', function(item)
     if inHuntingZone == true then
-        if item == 'basic_hunt_bait' then
+        if item == 'consumable_herbivore_bait' then
             local ped = PlayerPedId()
             baitLocation = GetEntityCoords(PlayerPedId())
             spawnLocation = getSpawnLoc()
             TaskStartScenarioInPlace(ped, `WORLD_HUMAN_CROUCH_INSPECT`, 0, true)
             Wait(10000)
             ClearPedTasks(ped)
-            TriggerServerEvent('rsg-hunting::server:removeItem', 'basic_hunt_bait')
+            TriggerServerEvent('rsg-hunting::server:removeItem', 'consumable_herbivore_bait')
             RSGCore.Functions.Notify(Lang:t('primary.bait_set'), 'primary')
             Wait(Config.HideTime)
-            local spawnanimal = Config.BasicHuntingAnimals[math.random(#Config.BasicHuntingAnimals)]
+            local spawnanimal = Config.HerbivoreBait[math.random(#Config.HerbivoreBait)]
             local model = spawnanimal
             RequestModel(model)
             while not HasModelLoaded(model) do
@@ -90,17 +90,89 @@ RegisterNetEvent('rsg-hunting:server:useHuntingBait', function(item)
                 end
             end)
         end
-        if item == 'prime_hunt_bait' then
+        if item == 'consumable_potent_herbivore_bait' then
+            local chance = math.random(1, 15)
+            if chance == Config.LegendaryChance then
+                local ped = PlayerPedId()
+                baitLocation = GetEntityCoords(PlayerPedId())
+                spawnLocation = getSpawnLoc()
+                TaskStartScenarioInPlace(ped, `WORLD_HUMAN_CROUCH_INSPECT`, 0, true)
+                Wait(10000)
+                ClearPedTasks(ped)
+                TriggerServerEvent('rsg-hunting::server:removeItem', 'consumable_potent_herbivore_bait')
+                RSGCore.Functions.Notify(Lang:t('primary.bait_set'), 'primary')
+                Wait(Config.HideTime)
+                local spawnanimal = Config.LegendaryHerbivore[math.random(#Config.LegendaryHerbivore)]
+                local model = spawnanimal
+                RequestModel(model)
+                while not HasModelLoaded(model) do
+                    Wait(10)
+                end
+                animal = CreatePed(model, spawnLocation.x, spawnLocation.y, spawnLocation.z, true, true, true)
+                Citizen.InvokeNative(0x283978A15512B2FE, animal, true)
+                Citizen.InvokeNative(0xDC19C288082E586E, animal, true, false)
+                TaskGoStraightToCoord(animal, baitLocation.x, baitLocation.y, baitLocation.z, 1.0, -1, 0.0, 0.0)
+                SetModelAsNoLongerNeeded(spawnanimal)
+                CreateThread(function()
+                    local finished = false
+                    while not IsPedDeadOrDying(animal) and not finished do
+                        local spawnedAnimalCoords = GetEntityCoords(animal)
+                        local distance = #(baitLocation - spawnedAnimalCoords)
+                        if distance < 1.0 then
+                            Wait(Config.AnimalWait)
+                            Citizen.InvokeNative(0xBB9CE077274F6A1B, animal, 10.0, 10)
+                            finished = true
+                        end
+                        Wait(1000)
+                    end
+                end)
+            else
+                local ped = PlayerPedId()
+                baitLocation = GetEntityCoords(PlayerPedId())
+                spawnLocation = getSpawnLoc()
+                TaskStartScenarioInPlace(ped, `WORLD_HUMAN_CROUCH_INSPECT`, 0, true)
+                Wait(10000)
+                ClearPedTasks(ped)
+                TriggerServerEvent('rsg-hunting::server:removeItem', 'consumable_potent_herbivore_bait')
+                RSGCore.Functions.Notify(Lang:t('primary.bait_set'), 'primary')
+                Wait(Config.HideTime)
+                local spawnanimal = Config.PotentHerbivoreBait[math.random(#Config.PotentHerbivoreBait)]
+                local model = spawnanimal
+                RequestModel(model)
+                while not HasModelLoaded(model) do
+                    Wait(10)
+                end
+                animal = CreatePed(model, spawnLocation.x, spawnLocation.y, spawnLocation.z, true, true, true)
+                Citizen.InvokeNative(0x283978A15512B2FE, animal, true)
+                Citizen.InvokeNative(0xDC19C288082E586E, animal, true, false)
+                TaskGoStraightToCoord(animal, baitLocation.x, baitLocation.y, baitLocation.z, 1.0, -1, 0.0, 0.0)
+                SetModelAsNoLongerNeeded(spawnanimal)
+                CreateThread(function()
+                    local finished = false
+                    while not IsPedDeadOrDying(animal) and not finished do
+                        local spawnedAnimalCoords = GetEntityCoords(animal)
+                        local distance = #(baitLocation - spawnedAnimalCoords)
+                        if distance < 1.0 then
+                            Wait(Config.AnimalWait)
+                            Citizen.InvokeNative(0xBB9CE077274F6A1B, animal, 10.0, 10)
+                            finished = true
+                        end
+                        Wait(1000)
+                    end
+                end)
+            end
+        end
+        if item == 'consumable_predator_bait' then
             local ped = PlayerPedId()
             baitLocation = GetEntityCoords(PlayerPedId())
             spawnLocation = getSpawnLoc()
             TaskStartScenarioInPlace(ped, `WORLD_HUMAN_CROUCH_INSPECT`, 0, true)
             Wait(10000)
             ClearPedTasks(ped)
-            TriggerServerEvent('rsg-hunting::server:removeItem', 'prime_hunt_bait')
+            TriggerServerEvent('rsg-hunting::server:removeItem', 'consumable_predator_bait')
             RSGCore.Functions.Notify(Lang:t('primary.bait_set'), 'primary')
             Wait(Config.HideTime)
-            local spawnanimal = Config.PrimeHuntingAnimals[math.random(#Config.PrimeHuntingAnimals)]
+            local spawnanimal = Config.PredatorBait[math.random(#Config.PredatorBait)]
             local model = spawnanimal
             RequestModel(model)
             while not HasModelLoaded(model) do
@@ -124,6 +196,78 @@ RegisterNetEvent('rsg-hunting:server:useHuntingBait', function(item)
                     Wait(1000)
                 end
             end)
+        end
+        if item == 'consumable_potent_predator_bait' then
+            local chance = math.random(1, 15)
+            if chance == Config.LegendaryChance then
+                local ped = PlayerPedId()
+                baitLocation = GetEntityCoords(PlayerPedId())
+                spawnLocation = getSpawnLoc()
+                TaskStartScenarioInPlace(ped, `WORLD_HUMAN_CROUCH_INSPECT`, 0, true)
+                Wait(10000)
+                ClearPedTasks(ped)
+                TriggerServerEvent('rsg-hunting::server:removeItem', 'consumable_potent_predator_bait')
+                RSGCore.Functions.Notify(Lang:t('primary.bait_set'), 'primary')
+                Wait(Config.HideTime)
+                local spawnanimal = Config.LegendaryPredator[math.random(#Config.LegendaryPredator)]
+                local model = spawnanimal
+                RequestModel(model)
+                while not HasModelLoaded(model) do
+                    Wait(10)
+                end
+                animal = CreatePed(model, spawnLocation.x, spawnLocation.y, spawnLocation.z, true, true, true)
+                Citizen.InvokeNative(0x283978A15512B2FE, animal, true)
+                Citizen.InvokeNative(0xDC19C288082E586E, animal, true, false)
+                TaskGoStraightToCoord(animal, baitLocation.x, baitLocation.y, baitLocation.z, 1.0, -1, 0.0, 0.0)
+                SetModelAsNoLongerNeeded(spawnanimal)
+                CreateThread(function()
+                    local finished = false
+                    while not IsPedDeadOrDying(animal) and not finished do
+                        local spawnedAnimalCoords = GetEntityCoords(animal)
+                        local distance = #(baitLocation - spawnedAnimalCoords)
+                        if distance < 1.0 then
+                            Wait(Config.AnimalWait)
+                            Citizen.InvokeNative(0xBB9CE077274F6A1B, animal, 10.0, 10)
+                            finished = true
+                        end
+                        Wait(1000)
+                    end
+                end)
+            else     
+                local ped = PlayerPedId()
+                baitLocation = GetEntityCoords(PlayerPedId())
+                spawnLocation = getSpawnLoc()
+                TaskStartScenarioInPlace(ped, `WORLD_HUMAN_CROUCH_INSPECT`, 0, true)
+                Wait(10000)
+                ClearPedTasks(ped)
+                TriggerServerEvent('rsg-hunting::server:removeItem', 'consumable_potent_predator_bait')
+                RSGCore.Functions.Notify(Lang:t('primary.bait_set'), 'primary')
+                Wait(Config.HideTime)
+                local spawnanimal = Config.PotentPredatorBait[math.random(#Config.PotentPredatorBait)]
+                local model = spawnanimal
+                RequestModel(model)
+                while not HasModelLoaded(model) do
+                    Wait(10)
+                end
+                animal = CreatePed(model, spawnLocation.x, spawnLocation.y, spawnLocation.z, true, true, true)
+                Citizen.InvokeNative(0x283978A15512B2FE, animal, true)
+                Citizen.InvokeNative(0xDC19C288082E586E, animal, true, false)
+                TaskGoStraightToCoord(animal, baitLocation.x, baitLocation.y, baitLocation.z, 1.0, -1, 0.0, 0.0)
+                SetModelAsNoLongerNeeded(spawnanimal)
+                CreateThread(function()
+                    local finished = false
+                    while not IsPedDeadOrDying(animal) and not finished do
+                        local spawnedAnimalCoords = GetEntityCoords(animal)
+                        local distance = #(baitLocation - spawnedAnimalCoords)
+                        if distance < 1.0 then
+                            Wait(Config.AnimalWait)
+                            Citizen.InvokeNative(0xBB9CE077274F6A1B, animal, 10.0, 10)
+                            finished = true
+                        end
+                        Wait(1000)
+                    end
+                end)
+            end
         end
     else
         RSGCore.Functions.Notify(Lang:t('error.cant_use'), 'error')
