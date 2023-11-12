@@ -3,7 +3,14 @@ rdr3_warning 'I acknowledge that this is a prerelease build of RedM, and I am aw
 game 'rdr3'
 
 description 'rsg-hunting'
-version '1.0.2'
+version '1.0.3'
+
+shared_scripts {
+    '@ox_lib/init.lua',
+    '@rsg-core/shared/locale.lua',
+    'locales/en.lua', -- preferred language
+    'config.lua',
+}
 
 client_scripts {
     '@PolyZone/client.lua',
@@ -11,21 +18,19 @@ client_scripts {
     '@PolyZone/EntityZone.lua',
     '@PolyZone/CircleZone.lua',
     '@PolyZone/ComboZone.lua',
-    'client/client.lua'
+    'client/client.lua',
+    'client/client_wagon.lua'
 }
 
 server_scripts {
-    'server/server.lua'
-}
-
-shared_scripts {
-    '@rsg-core/shared/locale.lua',
-    'locales/en.lua', -- preferred language
-    'config.lua',
+    '@oxmysql/lib/MySQL.lua',
+    'server/server.lua',
+    'server/server_wagon.lua'
 }
 
 dependencies {
     'rsg-core',
+    'ox_lib',
 }
 
 lua54 'yes'
