@@ -127,7 +127,7 @@ Citizen.CreateThread(function()
             local wagonpos = GetEntityCoords(currentHuntingWagon)
             local dist = #(pos - wagonpos)
             inRange = false
-            if dist < 3.0 then
+            if dist < 3.0 and not IsPedInAnyVehicle(ped, false) then
                 inRange = true
                 lib.showTextUI('[J] Open Hunting Wagon Menu', {
                     position = "top-center",
