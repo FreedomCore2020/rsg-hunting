@@ -65,48 +65,51 @@ RegisterNetEvent('rsg-hunting:client:spawnwagon', function(data)
         
         for i = 1, #results do
             local wagon = results[i]
-
             if wagon.huntingcamp == data.huntingcamp then
-                
-                local carthash = joaat('huntercart01')
-                local propset = joaat('pg_mp005_huntingWagonTarp01')
-                local lightset = joaat('pg_teamster_cart06_lightupgrade3')
+                if wagon.damaged ~= 1 then
+                    local carthash = joaat('huntercart01')
+                    local propset = joaat('pg_mp005_huntingWagonTarp01')
+                    local lightset = joaat('pg_teamster_cart06_lightupgrade3')
 
-                if IsModelAVehicle(carthash) then
-                    Citizen.CreateThread(function()
-                        RequestModel(carthash)
-                        while not HasModelLoaded(carthash) do
-                            Citizen.Wait(0)
-                        end
-                        local huntingcart = CreateVehicle(carthash, data.spawncoords, true, false)
-						Citizen.InvokeNative(0x06FAACD625D80CAA, huntingcart)
-                        SetVehicleOnGroundProperly(huntingcart)
-                        currentHuntingWagon = huntingcart
-                        currentHuntingPlate = wagon.plate
-                        Wait(200)
-                        Citizen.InvokeNative(0x75F90E4051CC084C, huntingcart, propset) -- AddAdditionalPropSetForVehicle
-                        Citizen.InvokeNative(0xC0F0417A90402742, huntingcart, lightset) -- AddLightPropSetToVehicle
-                        Citizen.InvokeNative(0xF89D82A0582E46ED, huntingcart, 5) -- SetVehicleLivery
-                        Citizen.InvokeNative(0x8268B098F6FCA4E2, huntingcart, 2) -- SetVehicleTint
-                        Citizen.InvokeNative(0x06FAACD625D80CAA, huntingcart) -- NetworkRegisterEntityAsNetworked
+                    if IsModelAVehicle(carthash) then
+                        Citizen.CreateThread(function()
+                            RequestModel(carthash)
+                            while not HasModelLoaded(carthash) do
+                                Citizen.Wait(0)
+                            end
+                            local huntingcart = CreateVehicle(carthash, data.spawncoords, true, false)
+                            Citizen.InvokeNative(0x06FAACD625D80CAA, huntingcart)
+                            SetVehicleOnGroundProperly(huntingcart)
+                            currentHuntingWagon = huntingcart
+                            currentHuntingPlate = wagon.plate
+                            Wait(200)
+                            Citizen.InvokeNative(0x75F90E4051CC084C, huntingcart, propset) -- AddAdditionalPropSetForVehicle
+                            Citizen.InvokeNative(0xC0F0417A90402742, huntingcart, lightset) -- AddLightPropSetToVehicle
+                            Citizen.InvokeNative(0xF89D82A0582E46ED, huntingcart, 5) -- SetVehicleLivery
+                            Citizen.InvokeNative(0x8268B098F6FCA4E2, huntingcart, 2) -- SetVehicleTint
+                            Citizen.InvokeNative(0x06FAACD625D80CAA, huntingcart) -- NetworkRegisterEntityAsNetworked
 
-                        --Citizen.InvokeNative(0x31F343383F19C987, huntingcart, 1.0, 1)
+                            --Citizen.InvokeNative(0x31F343383F19C987, huntingcart, 1.0, 1)
 
-                        SetEntityVisible(huntingcart, true)
-                        SetModelAsNoLongerNeeded(carthash)
+                            SetEntityVisible(huntingcart, true)
+                            SetModelAsNoLongerNeeded(carthash)
 
-                        Wait(1000)
+                            Wait(1000)
 
-                        -- set hunting wagon tarp
-                        RSGCore.Functions.TriggerCallback('rsg-hunting:server:gettarpinfo', function(results)
-                            local percentage = results * Config.TotalAnimalsStored / 100
-                            Citizen.InvokeNative(0x31F343383F19C987, huntingcart, tonumber(percentage), 1)
-                        end, wagon.plate)
+                            -- set hunting wagon tarp
+                            RSGCore.Functions.TriggerCallback('rsg-hunting:server:gettarpinfo', function(results)
+                                local percentage = results * Config.TotalAnimalsStored / 100
+                                Citizen.InvokeNative(0x31F343383F19C987, huntingcart, tonumber(percentage), 1)
+                            end, wagon.plate)
 
-                        lib.notify({ title = 'Hunting Wagon Spawned', description = 'your hunting is now out!', type = 'inform', duration = 5000 })
-                        hutingwagonspawned = true
-                        
-                    end)
+                            lib.notify({ title = 'Hunting Wagon Spawned', description = 'your hunting is now out!', type = 'inform', duration = 5000 })
+                            hutingwagonspawned = true
+                            
+                        end)
+                    end
+                else
+                    lib.notify({ title = 'Hunting Wagon Damaged!', description = 'your hunting wagon needs fixed!', type = 'error', duration = 5000 })
+					TriggerEvent('rsg-hunting:client:fixwagon', wagon.plate)
                 end
             else
                 lib.notify({ title = 'No Wagon Stored Here', description = 'you don\'t have a wagon stored here!', type = 'inform', duration = 5000 })
@@ -121,7 +124,7 @@ end)
 Citizen.CreateThread(function()
     while true do
         Wait(1)
-        if hutingwagonspawned == true then
+        if hutingwagonspawned then
             local ped = PlayerPedId()
             local pos = GetEntityCoords(ped)
             local wagonpos = GetEntityCoords(currentHuntingWagon)
@@ -180,6 +183,27 @@ local function SetClosestStoreLocation()
 end
 
 ---------------------------------------------------------------------
+-- get wagon state
+---------------------------------------------------------------------
+Citizen.CreateThread(function()
+    while true do
+        Wait(1000)
+        if hutingwagonspawned then
+            local drivable = Citizen.InvokeNative(0xB86D29B10F627379, currentHuntingWagon, false, false) -- IsVehicleDriveable
+            if not drivable then
+                lib.notify({ title = 'Wagon Damaged!', description = 'your hunting wagon has been damaged and being sent for repair!', type = 'inform', duration = 10000 })
+                DeleteVehicle(currentHuntingWagon)
+                SetEntityAsNoLongerNeeded(currentHuntingWagon)
+                hutingwagonspawned = false
+                SetClosestStoreLocation()
+                TriggerServerEvent('rsg-hunting:server:damagedwagon', closestWagonStore, currentHuntingPlate)
+                lib.hideTextUI()
+            end
+        end
+    end
+end)
+
+---------------------------------------------------------------------
 -- store wagon
 ---------------------------------------------------------------------
 RegisterNetEvent('rsg-hunting:client:storewagon', function(data)
@@ -188,7 +212,7 @@ RegisterNetEvent('rsg-hunting:client:storewagon', function(data)
         SetEntityAsNoLongerNeeded(currentHuntingWagon)
         hutingwagonspawned = false
         SetClosestStoreLocation()
-        TriggerServerEvent('rsg-hunting:client:updatewagonstore', closestWagonStore)
+        TriggerServerEvent('rsg-hunting:server:updatewagonstore', closestWagonStore, currentHuntingPlate)
         lib.hideTextUI()
     end
 end)
@@ -197,7 +221,7 @@ end)
 -- hutning wagon menu
 ---------------------------------------------------------------------
 RegisterNetEvent('rsg-hunting:client:openmenu', function(data)
-	local sellprice = (Config.WagonPrice * Config.WagonSellRate)
+    local sellprice = (Config.WagonPrice * Config.WagonSellRate)
     lib.registerContext({
         id = 'hunterwagon_menu',
         title = 'Hunter Wagon Menu',
@@ -278,12 +302,12 @@ RegisterNetEvent('rsg-hunting:client:sellwagoncheck', function(data)
 
     if input[1] == 'yes' then
         TriggerServerEvent('rsg-hunting:server:sellhuntingcart', data.plate )
-		if hutingwagonspawned then
-			DeleteVehicle(currentHuntingWagon)
-			SetEntityAsNoLongerNeeded(currentHuntingWagon)
-			hutingwagonspawned = false
-			lib.hideTextUI()
-		end
+        if hutingwagonspawned then
+            DeleteVehicle(currentHuntingWagon)
+            SetEntityAsNoLongerNeeded(currentHuntingWagon)
+            hutingwagonspawned = false
+            lib.hideTextUI()
+        end
     end
 end)
 
@@ -413,6 +437,37 @@ RegisterNetEvent('rsg-hunting:client:takeoutanimal', function(animalhash, animal
         Citizen.InvokeNative(0x31F343383F19C987, currentHuntingWagon, tonumber(percentage), 1)
     end, currentHuntingPlate)
 
+end)
+
+---------------------------------------------------------------------
+-- fix hunting wagon
+---------------------------------------------------------------------
+RegisterNetEvent('rsg-hunting:client:fixwagon', function(plate)
+    local fixprice = (Config.WagonPrice * Config.WagonFixRate)
+    local input = lib.inputDialog('Fix Hunting Wagon', {
+        { 
+            label = 'Fix for $'..fixprice,
+            type = 'select',
+            options = { 
+                { value = 'yes', label = 'Yes' },
+                { value = 'no', label = 'No' }
+            },
+            required = true,
+            icon = 'fa-solid fa-circle-question'
+        },
+    })
+
+    if not input then
+        return
+    end
+
+    if input[1] == 'no' then
+        return
+    end
+
+    if input[1] == 'yes' then
+        TriggerServerEvent('rsg-hunting:server:fixhuntingwagon', plate, fixprice )
+    end
 end)
 
 ---------------------------------------------------------------------

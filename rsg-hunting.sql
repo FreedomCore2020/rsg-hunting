@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS `hunting_wagons` (
     `citizenid` varchar(50) DEFAULT NULL,
     `plate` varchar(255) NOT NULL,
     `huntingcamp` varchar(50) DEFAULT NULL,
+    `damaged` tinyint(4) DEFAULT NULL,
     `active` tinyint(4) DEFAULT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -12,10 +12,11 @@ RegisterServerEvent('rsg-hunting:server:buyhuntingcart', function(data)
         local result = MySQL.prepare.await("SELECT COUNT(*) as count FROM hunting_wagons WHERE citizenid = ?", { citizenid })
         if result == 0 then
             local plate = GeneratePlate()
-            MySQL.insert('INSERT INTO hunting_wagons(citizenid, plate, huntingcamp, active) VALUES(@citizenid, @plate, @huntingcamp, @active)', {
+            MySQL.insert('INSERT INTO hunting_wagons(citizenid, plate, huntingcamp, damaged, active) VALUES(@citizenid, @plate, @huntingcamp, @damaged, @active)', {
                 ['@citizenid'] = citizenid,
                 ['@plate'] = plate,
                 ['@huntingcamp'] = data.huntingcamp,
+                ['@damaged'] = 0,
                 ['@active'] = 1,
             })
             Player.Functions.RemoveMoney("cash", Config.WagonPrice, "hunting-wagon")
@@ -58,13 +59,13 @@ RSGCore.Functions.CreateCallback('rsg-hunting:server:gettarpinfo', function(sour
 end)
 
 ----------------------------------------------------
--- store hunting wagon
+-- store good hunting wagon
 ----------------------------------------------------
-RegisterServerEvent('rsg-hunting:client:updatewagonstore', function(location)
+RegisterServerEvent('rsg-hunting:server:updatewagonstore', function(location, plate)
     local src = source
     local Player = RSGCore.Functions.GetPlayer(src)
     local citizenid = Player.PlayerData.citizenid
-    local newLocation = MySQL.query.await('UPDATE hunting_wagons SET huntingcamp = ? WHERE citizenid = ?' , { location, citizenid })
+    local newLocation = MySQL.query.await('UPDATE hunting_wagons SET huntingcamp = ? WHERE plate = ?' , { location, plate })
 
     if newLocation == nil then
         TriggerClientEvent('ox_lib:notify', src, {title = 'Failed', description = 'failed to store hunting cart in new location!', type = 'error', duration = 5000 })
@@ -72,6 +73,40 @@ RegisterServerEvent('rsg-hunting:client:updatewagonstore', function(location)
     end
     
     TriggerClientEvent('ox_lib:notify', src, {title = 'Hunting Wagon Stored', description = 'you hunting wagon was stored at '..location, type = 'success', duration = 5000 })
+end)
+
+----------------------------------------------------
+-- store damaged hunting wagon
+----------------------------------------------------
+RegisterServerEvent('rsg-hunting:server:damagedwagon', function(location, plate)
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    local citizenid = Player.PlayerData.citizenid
+    local newLocation = MySQL.query.await('UPDATE hunting_wagons SET huntingcamp = ? WHERE plate = ?' , { location, plate })
+	local newDamage = MySQL.query.await('UPDATE hunting_wagons SET damaged = ? WHERE plate = ?' , { 1, plate })
+	
+    if (newLocation == nil) or (newDamage == nil) then
+        TriggerClientEvent('ox_lib:notify', src, {title = 'Failed', description = 'failed to store hunting wagon information!', type = 'error', duration = 5000 })
+        return
+    end
+    
+    TriggerClientEvent('ox_lib:notify', src, {title = 'Damaged Hunting Wagon Stored', description = 'you damaged hunting wagon was stored at '..location, type = 'success', duration = 5000 })
+end)
+
+----------------------------------------------------
+-- fix damaged hunting wagon
+----------------------------------------------------
+RegisterServerEvent('rsg-hunting:server:fixhuntingwagon', function(plate, price)
+    local src = source
+    local Player = RSGCore.Functions.GetPlayer(src)
+    local cashBalance = Player.PlayerData.money["cash"]
+    if cashBalance >= price then
+        Player.Functions.RemoveMoney("cash", price, "fix-hunting-wagon")
+        MySQL.update('UPDATE hunting_wagons SET damaged = ? WHERE plate = ?' , { 0, plate })
+        TriggerClientEvent('ox_lib:notify', src, {title = 'Hunting Wagon Fixed', description = 'your wagon is now fixed', type = 'success', duration = 5000 })
+    else
+        TriggerClientEvent('ox_lib:notify', src, {title = 'Not Enough Cash!', description = 'you need more cash to do that!', type = 'error', duration = 5000 })
+    end
 end)
 
 ----------------------------------------------------

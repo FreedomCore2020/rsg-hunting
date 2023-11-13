@@ -91,6 +91,7 @@ Config.WagonSellRate = 0.75 -- sell rate percentage for hunting wagon
 Config.TotalAnimalsStored = 10 -- total amount of animals you can store in the hunting cart
 Config.WagonInventoryMaxWeight = 400000	-- max inventory weight for the hunting wagon
 Config.WagonInventorySlots = 48 -- amount of inventory slots
+Config.WagonFixRate = 0.10
 
 Config.Blip = {
     blipName = 'Hunting Camp', -- Config.Blip.blipName
