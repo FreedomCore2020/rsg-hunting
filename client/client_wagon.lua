@@ -60,7 +60,7 @@ end)
 RegisterNetEvent('rsg-hunting:client:spawnwagon', function(data)
     RSGCore.Functions.TriggerCallback('rsg-hunting:server:getwagons', function(results)
 
-        if results == nil then return lib.notify({ title = 'No Wagons', description = 'you have no wagson stored here', type = 'inform', duration = 5000 }) end
+        if results == nil then return lib.notify({ title = 'No Wagons', description = 'you have no wagons stored here', type = 'inform', duration = 5000 }) end
         if hutingwagonspawned then return lib.notify({ title = 'Hunting Wagon Out', description = 'your hunting wagon is already out!', type = 'error', duration = 5000 }) end
         
         for i = 1, #results do
@@ -102,7 +102,7 @@ RegisterNetEvent('rsg-hunting:client:spawnwagon', function(data)
                                 Citizen.InvokeNative(0x31F343383F19C987, huntingcart, tonumber(percentage), 1)
                             end, wagon.plate)
 
-                            lib.notify({ title = 'Hunting Wagon Spawned', description = 'your hunting is now out!', type = 'inform', duration = 5000 })
+                            lib.notify({ title = 'Hunting Wagon Spawned', description = 'your hunting wagon is now out!', type = 'inform', duration = 5000 })
                             hutingwagonspawned = true
                             
                         end)
@@ -218,7 +218,7 @@ RegisterNetEvent('rsg-hunting:client:storewagon', function(data)
 end)
 
 ---------------------------------------------------------------------
--- hutning wagon menu
+-- hunting wagon menu
 ---------------------------------------------------------------------
 RegisterNetEvent('rsg-hunting:client:openmenu', function(data)
     local sellprice = (Config.WagonPrice * Config.WagonSellRate)
@@ -255,7 +255,7 @@ RegisterNetEvent('rsg-hunting:client:openmenu', function(data)
             },
             {
                 title = 'Store Hunting Wagon',
-                description = 'put your hunting wagaon away',
+                description = 'put your hunting wagon away',
                 icon = 'fa-solid fa-circle-xmark',
                 event = 'rsg-hunting:client:storewagon',
                 arrow = true
